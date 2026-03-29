@@ -3,21 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
-import React, { useRef, useEffect, useState } from "react";
-import { ArrowRight, Sparkles, Info, Share2, Heart, Loader2, Globe, ShoppingBag, Palette, Camera, Menu, X } from "lucide-react";
-import { generateCreativeAssets } from "./services/imageService";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useRef, useEffect, useState } from "react";
+import { ArrowRight, Sparkles, Globe, ShoppingBag, Palette, Camera, Menu } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import type { MotionValue } from "motion/react";
-
-function EditionSection({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
-  return (
-    <section id={id} className={`min-h-screen w-full relative overflow-hidden ${className}`}>
-      {children}
-    </section>
-  );
-}
 
 function BentoCard({ title, description, icon: Icon, className = "", image = "" }: { title: string; description: string; icon: any; className?: string; image?: string }) {
   return (
@@ -96,14 +87,19 @@ function WomanModel({ scrollProgress }: { scrollProgress: MotionValue<number> })
     if (!meshRef.current) return;
     const p = scrollProgress.get();
 
-    // Scrub animation time with scroll
+    // Scrub animation with scroll by directly setting time on mixer
     if (names.length > 0 && actions[names[0]]) {
       const action = actions[names[0]];
       const duration = action.getClip().duration;
-      mixer.setTime(p * duration);
+      const targetTime = Math.min(p * duration, duration);
+      action.paused = false;
+      action.time = targetTime;
+      mixer.update(0);
+      action.paused = true;
     }
 
-    meshRef.current.position.y = -2 + p * 0.4;
+    meshRef.current.position.x = 0;
+    meshRef.current.position.y = -1.4;
     meshRef.current.rotation.y = -Math.PI / 2;
   });
 
@@ -111,8 +107,8 @@ function WomanModel({ scrollProgress }: { scrollProgress: MotionValue<number> })
     <primitive
       ref={meshRef}
       object={scene}
-      scale={1.8}
-      position={[0, -2, 0]}
+      scale={1.44}
+      position={[0, -1.4, 0]}
     />
   );
 }
@@ -201,56 +197,56 @@ function CharacterLayer({
 function PortfolioGallery({ assets }: { assets: Record<string, string> }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [activeSection, setActiveSection] = useState(0);
-  
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
 
-  const { scrollYProgress: heroScroll } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
 
-  const heroScale = useTransform(heroScroll, [0, 0.65, 1], [1, 1, 0.92]);
-  const heroY = useTransform(heroScroll, [0, 0.65, 1], ["0%", "0%", "8%"]);
+  // All animations driven by page-level scroll (0 = top, 1 = bottom of 300vh page)
+  const heroScale = useTransform(scrollYProgress, [0, 0.4], [1, 0.92], { clamp: true });
+  const heroY = useTransform(scrollYProgress, [0, 0.4], ["0%", "8%"], { clamp: true });
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0], { clamp: true });
 
-  // Renaissance candlelight transition — warm vignette closes like a flame going out
-  const vignetteShadow = useTransform(
-    heroScroll,
-    [0.60, 0.88],
-    [
-      "inset 0 0 0px 0px rgba(6,3,0,0)",
-      "inset 0 0 400px 400px rgba(6,3,0,1)"
-    ]
-  );
-  const vignetteOpacity = useTransform(heroScroll, [0.91, 1.0], [1, 0]);
-  // Golden medallion that flickers briefly as the light dies
-  const medallionScale = useTransform(heroScroll, [0.68, 0.80, 0.90], [0, 1, 0]);
-  const medallionOpacity = useTransform(heroScroll, [0.68, 0.76, 0.90], [0, 1, 0]);
-
-  const polymathBg = useTransform(
-    scrollYProgress,
-    [0.2, 0.3],
-    ["rgba(10, 10, 10, 1)", "rgba(20, 20, 30, 1)"]
-  );
+  // Circle-reveal color flip: a dot grows from center, inside = invert+hue-rotate (vivid color swap)
+  const circleRadius = useTransform(scrollYProgress, [0.35, 0.70], [0, 150], { clamp: true });
+  const circleClipPath = useTransform(circleRadius, r => `circle(${r}% at 50% 50%)`);
+  const wobbleOpacity = useTransform(scrollYProgress, [0.62, 0.70], [1, 0], { clamp: true });
+  const FLIP_FILTER = "invert(1) hue-rotate(180deg) saturate(2.2)";
 
   const sections = [
     { id: "intro", label: "The Intro" },
     { id: "polymath", label: "The Polymath" },
-    { id: "journey", label: "The Journey" },
-    { id: "guild", label: "The Guild" }
   ];
 
   // Intro Section Animations
-  const bgScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.2]);
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.1, 0.2], [1, 0.8, 0.6]);
-  const propY = useTransform(scrollYProgress, [0, 0.2], ["0%", "-50%"]);
-  const propRotate = useTransform(scrollYProgress, [0, 0.2], [0, 25]);
+  const bgScale = useTransform(scrollYProgress, [0, 0.4], [1, 1.2], { clamp: true });
+  const bgOpacity = useTransform(scrollYProgress, [0, 0.1, 0.25], [1, 0.8, 0.6], { clamp: true });
+  const propY = useTransform(scrollYProgress, [0, 0.3], ["0%", "-50%"], { clamp: true });
+  const propRotate = useTransform(scrollYProgress, [0, 0.3], [0, 25], { clamp: true });
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0a] text-[#f5f2ed] font-sans selection:bg-[#FFD700] selection:text-black">
+      {/* SVG filters for wobbly organic circle */}
+      <svg style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }} aria-hidden="true">
+        <defs>
+          {/* Interior: very subtle displacement so content stays readable */}
+          <filter id="wobble-interior" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.012" numOctaves="2" seed="3" result="noise">
+              <animate attributeName="baseFrequency" values="0.015 0.012;0.012 0.018;0.018 0.010;0.015 0.012" dur="12s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          {/* Edge: large slow low-frequency waves for a big dramatic circumference wobble */}
+          <filter id="wobble-edge" x="-25%" y="-25%" width="150%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.005 0.007" numOctaves="2" seed="11" result="noise">
+              <animate attributeName="baseFrequency" values="0.005 0.007;0.007 0.004;0.004 0.009;0.006 0.005;0.005 0.007" dur="18s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="90" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 p-6 md:p-10 flex justify-between items-center mix-blend-difference">
         <div className="flex items-center gap-4 group cursor-pointer">
@@ -292,283 +288,131 @@ function PortfolioGallery({ assets }: { assets: Record<string, string> }) {
         style={{ scaleX: scrollYProgress }}
       />
 
-      {/* MAIN CONTENT CONTAINER */}
-      <div ref={containerRef} className="relative">
-        {/* Renaissance candlelight transition */}
-        <motion.div style={{ opacity: vignetteOpacity }} className="fixed inset-0 z-[90] pointer-events-none">
-          {/* Warm darkness closing in from the edges */}
-          <motion.div style={{ boxShadow: vignetteShadow }} className="absolute inset-0" />
-          {/* Golden medallion — a last flicker of light */}
-          <motion.div
-            style={{ scale: medallionScale, opacity: medallionOpacity }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <div className="w-48 h-48 rounded-full border-2 border-[#FFD700]/80 shadow-[0_0_80px_20px_rgba(255,215,0,0.25)]" />
-          </motion.div>
-        </motion.div>
+      {/* MAIN HERO TRANSITION CONTAINER */}
+      <div ref={containerRef} id="intro" className="relative w-full" style={{ height: "200vh" }}>
+        <div className="h-screen sticky top-0 z-0 overflow-hidden bg-black">
 
-        {/* SECTION 1: THE INTRO (VERTICAL HERO) */}
-        <div ref={heroRef}>
-        <div className="h-screen sticky top-0 z-0">
-          <motion.div
-            style={{
-              scale: heroScale,
-              y: heroY
-            }}
-            className="w-full h-full relative overflow-hidden bg-black"
-          >
-            {/* Vibrant Background Layer */}
-            <motion.div 
-              style={{ scale: bgScale, opacity: bgOpacity }}
-              className="absolute inset-0 z-0"
-            >
-              <img 
-                src={assets.hero_bg} 
-                className="w-full h-full object-cover saturate-[1.5] contrast-[1.2]" 
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700]/10 via-transparent to-[#FF6347]/10" />
-              <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          {/* [A] BASE LAYER — normal colors */}
+          <motion.div style={{ scale: heroScale, y: heroY }} className="absolute inset-0 w-full h-full">
+            {/* Background */}
+            <motion.div style={{ scale: bgScale, opacity: bgOpacity }} className="absolute inset-0 z-0">
+              <img src={assets.hero_bg} className="w-full h-full object-cover saturate-[1.8] contrast-[1.15] brightness-[0.75]" referrerPolicy="no-referrer" alt="Hero Background" />
+              <div className="absolute inset-0 bg-[#0a0a2a] opacity-60 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/70" />
             </motion.div>
-
-            {/* Tiramisu — falls from top center, arcs to her hand */}
-            <div className="absolute inset-0 z-20 pointer-events-none">
-              <TiramisuScene scrollProgress={heroScroll} />
+            {/* 3D Woman */}
+            <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+              <WomanScene scrollProgress={scrollYProgress} />
             </div>
-
-            {/* 3D Woman — right side of hero */}
-            <div className="absolute right-0 top-0 w-1/2 h-full z-25 pointer-events-none">
-              <WomanScene scrollProgress={heroScroll} />
-            </div>
-
-            <div className="relative z-10 w-full h-full flex items-center justify-between px-10 md:px-20 overflow-hidden">
-              {/* Left Character (Man) */}
-              <CharacterLayer 
-                image={assets.hero_subject_man} 
-                side="left" 
-                scrollProgress={heroScroll} 
-              />
-
-              {/* Center Title */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30 pointer-events-none w-full max-w-4xl px-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                >
-                  <h1 className="text-[12vw] md:text-[10vw] font-serif italic leading-[0.8] mb-6 tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+            {/* Title + props */}
+            <div className="relative z-30 w-full h-full pointer-events-none">
+              <motion.div style={{ opacity: heroContentOpacity }} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full max-w-4xl px-4 z-40">
+                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.5 }}>
+                  <h1 className="text-[12vw] md:text-[10vw] font-serif italic leading-[0.8] mb-6 tracking-tighter text-white drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]">
                     The <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#FF6347] to-[#9370DB] animate-gradient-x">Renaissance</span> <br />
+                    <span className="text-transparent bg-clip-text bg-linear-to-r from-[#FFD700] via-[#FF6347] to-[#9370DB]">Renaissance</span> <br />
                     Edition
                   </h1>
-                  <p className="text-sm md:text-base uppercase tracking-[0.6em] text-white/60 font-mono font-bold">
-                    A New World of Creative Commerce
-                  </p>
+                  <p className="text-sm md:text-base uppercase tracking-[0.6em] text-white/60 font-mono font-bold">A New World of Creative Commerce</p>
                 </motion.div>
-              </div>
-
-              {/* Right Character (Woman) */}
-              <CharacterLayer
-                image={assets.hero_subject_woman}
-                side="right"
-                scrollProgress={heroScroll}
-              />
-
-              {/* Neon Props (The "Pops") */}
-              <motion.div 
-                style={{ y: propY, rotate: propRotate }}
-                className="absolute bottom-20 left-1/4 z-40 hidden md:block"
-              >
-                <div className="w-40 h-40 rounded-full bg-[#FF00FF] blur-[100px] opacity-30" />
-                <ShoppingBag size={80} className="text-[#FF00FF] drop-shadow-[0_0_30px_rgba(255,0,255,0.8)]" />
               </motion.div>
-
-              <motion.div 
-                style={{ y: propY, rotate: -propRotate }}
-                className="absolute top-20 right-1/4 z-40 hidden md:block"
-              >
-                <div className="w-40 h-40 rounded-full bg-[#00FFFF] blur-[100px] opacity-30" />
-                <Sparkles size={80} className="text-[#00FFFF] drop-shadow-[0_0_30px_rgba(0,255,255,0.8)]" />
+              <motion.div style={{ y: propY, rotate: propRotate, opacity: heroContentOpacity }} className="absolute bottom-20 left-1/4 hidden md:block z-40">
+                <div className="w-40 h-40 rounded-full bg-[#FF00FF] blur-[100px] opacity-30 absolute inset-0" />
+                <ShoppingBag size={80} className="relative z-10 text-[#FF00FF] drop-shadow-[0_0_30px_rgba(255,0,255,0.8)]" />
               </motion.div>
-            </div>
-            
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 opacity-60">
-              <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Scroll Down</span>
-              <motion.div 
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-px h-12 bg-white/40"
-              />
+              <motion.div style={{ y: propY, rotate: -propRotate, opacity: heroContentOpacity }} className="absolute top-20 right-1/4 hidden md:block z-40">
+                <div className="w-40 h-40 rounded-full bg-[#00FFFF] blur-[100px] opacity-30 absolute inset-0" />
+                <Sparkles size={80} className="relative z-10 text-[#00FFFF] drop-shadow-[0_0_30px_rgba(0,255,255,0.8)]" />
+              </motion.div>
             </div>
           </motion.div>
-        </div>
 
-        {/* Spacer to allow hero to scroll out */}
-        <div className="h-screen" />
-        </div>
-
-        {/* SECTION 2: THE POLYMATH (BENTO) */}
-        <EditionSection id="polymath" className="p-8 md:p-12 flex flex-col justify-center relative">
-          <motion.div 
-            style={{ backgroundColor: polymathBg }}
-            className="absolute inset-0 z-0"
+          {/* [B] CIRCLE LAYER — clipped flipped content, always present */}
+          <motion.div
+            style={{ scale: heroScale, y: heroY, clipPath: circleClipPath }}
+            className="absolute inset-0 w-full h-full pointer-events-none"
           >
-            <img 
-              src={assets.abstract} 
-              className="w-full h-full object-cover opacity-20 mix-blend-overlay" 
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+            <motion.div style={{ scale: bgScale, opacity: bgOpacity, filter: FLIP_FILTER }} className="absolute inset-0 z-0">
+              <img src={assets.hero_bg} className="w-full h-full object-cover saturate-[1.8] contrast-[1.15] brightness-[0.75]" referrerPolicy="no-referrer" alt="" />
+              <div className="absolute inset-0 bg-[#0a0a2a] opacity-60 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/70" />
+            </motion.div>
+            <div className="absolute inset-0 w-full h-full z-0">
+              <WomanScene scrollProgress={scrollYProgress} />
+            </div>
           </motion.div>
-          
-          <div className="max-w-7xl mx-auto w-full relative z-10">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="mb-16"
-            >
-              <h2 className="text-6xl md:text-8xl font-serif italic mb-4">The Polymath</h2>
-              <p className="text-xs opacity-40 uppercase tracking-[0.4em] font-bold">Multidisciplinary Outlets</p>
-            </motion.div>
-            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-[65vh]">
-              <BentoCard 
-                title="Visual Arts" 
-                description="Exploring the intersection of tradition and digital modernity."
-                icon={Palette}
-                className="md:col-span-2 md:row-span-2"
-                image={assets.abstract}
-              />
-              <BentoCard 
-                title="Travel" 
-                description="Documenting the hidden gems of the Great Lakes region."
-                icon={Globe}
-                className="md:col-span-1 md:row-span-1"
-              />
-              <BentoCard 
-                title="Curation" 
-                description="Shopping local, thinking global. A guide to Rwandan artisans."
-                icon={ShoppingBag}
-                className="md:col-span-1 md:row-span-2"
-                image={assets.local}
-              />
-              <BentoCard 
-                title="Photography" 
-                description="Capturing the honey-brown light of the Kigali golden hour."
-                icon={Camera}
-                className="md:col-span-1 md:row-span-1"
-              />
-            </div>
-          </div>
-        </EditionSection>
 
-        {/* SECTION 3: THE JOURNEY */}
-        <EditionSection id="journey" className="bg-[#f5f2ed] text-[#1a1a1a]">
-          <div className="absolute inset-0 z-0 opacity-15">
-            <img src={assets.travel} alt="Travel" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-          </div>
-          <div className="relative z-10 h-full flex flex-col justify-between p-12 md:p-24">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="max-w-3xl"
-            >
-              <h2 className="text-[10vw] font-serif italic leading-[0.9] mb-12">The Journey</h2>
-              <p className="text-2xl md:text-3xl leading-relaxed opacity-80 font-light">
-                At 24, the world is a canvas of experiences. From the rolling hills of Rwanda to the bustling markets of the world, every step is a lesson in creative discovery.
-              </p>
-            </motion.div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 items-end">
-              <div className="space-y-2">
-                <div className="text-7xl font-serif italic">12+</div>
-                <p className="text-[10px] uppercase tracking-widest opacity-40 font-bold">Countries Explored</p>
-              </div>
-              <div className="space-y-2">
-                <div className="text-7xl font-serif italic">150+</div>
-                <p className="text-[10px] uppercase tracking-widest opacity-40 font-bold">Local Artisans</p>
-              </div>
-              <div className="col-span-2 md:text-right">
-                <p className="text-xl opacity-60 italic font-serif leading-relaxed">
-                  "To travel is to find the pieces of yourself you didn't know were missing."
-                </p>
-              </div>
-            </div>
-          </div>
-        </EditionSection>
-
-        {/* SECTION 4: THE GUILD */}
-        <EditionSection id="guild" className="flex items-center justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full">
-            <div className="bg-white text-black p-12 md:p-24 flex flex-col justify-between">
+          {/* Wobble overlay — distorts the clip edge, fades out once circle fills screen */}
+          <motion.div style={{ opacity: wobbleOpacity }} className="absolute inset-0 pointer-events-none">
+            {/* Circle edge wobble */}
+            <div style={{ filter: "url(#wobble-edge)", position: "absolute", inset: 0 }}>
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                style={{ scale: heroScale, y: heroY, clipPath: circleClipPath }}
+                className="absolute inset-0 w-full h-full"
               >
-                <h2 className="text-7xl md:text-9xl font-serif italic mb-12">The Local <br />Guild</h2>
-                <p className="text-xl md:text-2xl opacity-70 leading-relaxed font-light max-w-md">
-                  A dedicated space for the makers. Highlighting Rwandan craftsmanship through a modern lens.
-                </p>
+                <motion.div style={{ scale: bgScale, opacity: bgOpacity, filter: FLIP_FILTER }} className="absolute inset-0 z-0">
+                  <img src={assets.hero_bg} className="w-full h-full object-cover saturate-[1.8] contrast-[1.15] brightness-[0.75]" referrerPolicy="no-referrer" alt="" />
+                  <div className="absolute inset-0 bg-[#0a0a2a] opacity-60 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/70" />
+                </motion.div>
               </motion.div>
-              <button className="w-fit px-16 py-8 border border-black rounded-full hover:bg-black hover:text-white transition-all duration-700 uppercase tracking-[0.3em] text-[10px] font-bold">
-                Explore the Shop
-              </button>
             </div>
-            <div className="relative overflow-hidden group">
-              <img src={assets.local} alt="Local" className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-[2000ms]" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-1000" />
-              <div className="absolute top-12 left-12 text-white">
-                <p className="text-[10px] uppercase tracking-[0.4em] font-bold mb-4 opacity-60">Featured Collection</p>
-                <p className="text-4xl md:text-6xl font-serif italic">Imigongo Modernism</p>
-              </div>
-              <div className="absolute bottom-12 right-12">
-                <div className="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-md">
-                  <Sparkles size={32} className="text-white animate-pulse" />
-                </div>
-              </div>
+            {/* Glowing border ring */}
+            <div style={{ filter: "url(#wobble-edge)", position: "absolute", inset: 0 }}>
+              <motion.div style={{ scale: heroScale, y: heroY }} className="absolute inset-0 w-full h-full">
+                <motion.div
+                  style={{
+                    clipPath: circleClipPath,
+                    position: "absolute", inset: 0,
+                    background: "radial-gradient(circle, transparent 90%, rgba(255,215,0,0.55) 94%, rgba(255,100,0,0.25) 98%, transparent 100%)",
+                    filter: "drop-shadow(0 0 14px rgba(255,185,0,0.8)) drop-shadow(0 0 40px rgba(255,80,0,0.35))",
+                  }}
+                />
+              </motion.div>
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+
+      {/* REGULAR POLYMATH SECTION */}
+      {/* Positioned normally so it naturally scrolls into view pushed up as the Hero sticky container finishes its 200vh travel */}
+      <div id="polymath" className="relative z-20 w-full min-h-screen bg-[#0a0a0a]">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <img src="/ship-background.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a] via-black/60 to-[#0a0a0a]" />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 50%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
+        </div>
+
+        <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 overflow-hidden">
+          <div className="max-w-7xl mx-auto w-full pt-20 pb-40">
+            <div className="mb-16 text-center md:text-left">
+              <h2 className="text-6xl md:text-8xl font-serif italic mb-4 text-[#FFD700]">The Polymath</h2>
+              <p className="text-sm opacity-60 uppercase tracking-[0.4em] font-bold text-white">Multidisciplinary Outlets</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-[65vh] min-h-[500px]">
+              <BentoCard title="Visual Arts" description="Exploring the intersection of tradition and digital modernity." icon={Palette} className="md:col-span-2 md:row-span-2" image={assets.abstract} />
+              <BentoCard title="Travel" description="Documenting the hidden gems of the Great Lakes region." icon={Globe} className="md:col-span-1 md:row-span-1" />
+              <BentoCard title="Curation" description="Shopping local, thinking global. A guide to Rwandan artisans." icon={ShoppingBag} className="md:col-span-1 md:row-span-2" image={assets.local} />
+              <BentoCard title="Photography" description="Capturing the honey-brown light of the Kigali golden hour." icon={Camera} className="md:col-span-1 md:row-span-1" />
             </div>
           </div>
-        </EditionSection>
+        </div>
       </div>
     </div>
   );
 }
 
+const ASSETS = {
+  hero_bg: "/main-background.jpeg",
+  hero_subject_woman: "/woman-1.png", 
+  hero_subject_man: "/man-1.png", 
+  hero_accents: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=1080",
+  travel: "https://images.unsplash.com/photo-1589908000350-0962e5a5133b?auto=format&fit=crop&q=80&w=1080",
+  local: "https://images.unsplash.com/photo-1517147177326-b37599372b73?auto=format&fit=crop&q=80&w=1080",
+  abstract: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1080"
+};
+
 export default function App() {
-  const [assets, setAssets] = useState<Record<string, string> | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadAssets() {
-      try {
-        const data = await generateCreativeAssets();
-        setAssets(data);
-      } catch (error) {
-        console.error("Failed to generate assets:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadAssets();
-  }, []);
-
-  if (loading || !assets) {
-    return (
-      <div className="h-screen w-full bg-[#050505] flex flex-col items-center justify-center text-[#f5f2ed] font-serif">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="mb-8"
-        >
-          <Loader2 size={64} className="opacity-20" />
-        </motion.div>
-        <div className="text-center space-y-2">
-          <p className="text-sm uppercase tracking-[0.5em] opacity-40 animate-pulse">Curating the Collection</p>
-          <p className="text-[10px] uppercase tracking-[0.3em] opacity-20">Renaissance '26</p>
-        </div>
-      </div>
-    );
-  }
-
-  return <PortfolioGallery assets={assets} />;
+  return <PortfolioGallery assets={ASSETS} />;
 }
