@@ -4,7 +4,10 @@
       "Bash(npx vite:*)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "WebFetch(domain:www.shopify.com)"
+      "WebFetch(domain:www.shopify.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "WebSearch"
     ]
   }
 }

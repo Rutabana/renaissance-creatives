@@ -7,7 +7,7 @@ export async function generateCreativeAssets() {
   // Using local assets uploaded by the user
   const assets: Record<string, string> = {
     // Local background image
-    hero_bg: "/main-background.jpeg",
+    hero_bg: "/bg.png",
     
     // Local character images with transparent backgrounds
     hero_subject_woman: "/woman-1.png", 
