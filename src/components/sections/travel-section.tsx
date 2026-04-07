@@ -205,70 +205,89 @@ export function TravelSection({ assets }: { assets: Record<string, string> }) {
     );
 }
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-20%",
+    zIndex: direction > 0 ? 10 : 0,
+  }),
+  center: {
+    x: 0,
+    zIndex: 5,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? "-20%" : "100%",
+    zIndex: direction > 0 ? 0 : 10,
+  })
+};
 
+export function TransformingPanel({ countries, assets }: { countries: any[], assets: any }) {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
 
+  const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(1); // 1. NEW: Track scroll direction
 
-
-function TransformingPanel({ countries, assets }: { countries: any[], assets: any }) {
-    const containerRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"]
-    });
-
-    const [index, setIndex] = useState(0);
-
-    // FIX: Use useMotionValueEvent instead of useFrame
-    useMotionValueEvent(scrollYProgress, "change", (latest) => {
-        const newIndex = Math.min(
-            Math.floor(latest * countries.length),
-            countries.length - 1
-        );
-        if (newIndex !== index) {
-            setIndex(newIndex);
-        }
-    });
-
-    const current = countries[index];
-    const scrambledTitle = useScramble(current.name);
-
-    return (
-        <div ref={containerRef} className="h-[300vh] relative">
-            <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
-
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={current.id}
-                        initial={{ x: "100%" }}
-                        animate={{ x: 0 }}
-                        exit={{ x: "-100%" }}
-                        transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-                        className="absolute inset-0 z-0"
-                    >
-                        <img src={assets[current.assetKey]} className="w-full h-full object-cover brightness-50" referrerPolicy="no-referrer" />
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Change max-w-2xl to max-w-4xl or max-w-5xl */}
-                <div className="relative z-10 px-24 max-w-5xl">
-                  <motion.h3 className="text-[8vw] font-serif italic text-white leading-none">
-                    {scrambledTitle}
-                  </motion.h3>
-                  <motion.div 
-                    key={current.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <ParticleTextPanel text={current.body} isVisible={true} />
-                  </motion.div>
-                </div>
-
-                {/* Bring back the 3D Scholar scene if you want him floating in this section */}
-                <div className="absolute inset-0 pointer-events-none z-20">
-                    <ScholarScene />
-                </div>
-            </div>
-        </div>
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const newIndex = Math.min(
+      Math.floor(latest * countries.length),
+      countries.length - 1
     );
+    if (newIndex !== index) {
+      // 2. NEW: Compare indices to know if we are going forwards (1) or backwards (-1)
+      setDirection(newIndex > index ? 1 : -1);
+      setIndex(newIndex);
+    }
+  });
+
+  const current = countries[index];
+  const scrambledTitle = useScramble(current.name);
+
+  return (
+    <div ref={containerRef} className="h-[300vh] relative">
+      <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden">
+        
+        {/* 3. NEW: Pass the direction into AnimatePresence as a custom prop */}
+        <AnimatePresence custom={direction}>
+          <motion.div
+            key={current.id}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            className="absolute inset-0"
+          >
+            <img 
+              src={assets[current.assetKey]} 
+              className="w-full h-full object-cover brightness-50" 
+              referrerPolicy="no-referrer" 
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Keeping your wider max-w-5xl from earlier! */}
+        <div className="relative z-10 px-24 max-w-5xl">
+          <motion.h3 className="text-[8vw] font-serif italic text-white leading-none">
+            {scrambledTitle}
+          </motion.h3>
+          <motion.div 
+            key={current.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <ParticleTextPanel text={current.body} isVisible={true} />
+          </motion.div>
+        </div>
+
+        <div className="absolute inset-0 pointer-events-none z-20">
+          <ScholarScene />
+        </div>
+      </div>
+    </div>
+  );
 }
