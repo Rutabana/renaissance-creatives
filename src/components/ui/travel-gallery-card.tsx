@@ -1,72 +1,40 @@
-import { useState } from "react";
-import { motion } from "motion/react";
+import MuxPlayer from "@mux/mux-player-react";
 
 interface TravelGalleryCardProps {
-  images: string[];
-  title: string;
+  playbackId: string;
   className?: string;
-  defaultWidth?: number;
-  expandedWidth?: number;
+  width?: number;
+  height?: number;
 }
 
-export function TravelGalleryCard({ 
-  images, 
-  title, 
-  className = "", 
-  defaultWidth = 140, 
-  expandedWidth = 400 
+export function TravelGalleryCard({
+  playbackId,
+  className = "",
+  width = 240,
+  height = 320,
 }: TravelGalleryCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
-    <motion.div
-      className={`absolute z-40 cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-[#04040f]/60 backdrop-blur-md flex items-center justify-center p-2 ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      initial={false}
-      animate={{
-        width: isHovered ? expandedWidth : defaultWidth,
-        height: 180
-      }}
-      // Using a custom cubic-bezier for a snappy, precise expansion
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    <div
+      className={`absolute z-40 overflow-hidden rounded-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-white/5 backdrop-blur-sm ${className}`}
+      style={{ width, height }}
     >
-      {/* Default State Text */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        animate={{ opacity: isHovered ? 0 : 1 }}
-        transition={{ duration: 0.3 }}
-      >
-         <span className="text-white/60 font-mono text-[10px] uppercase tracking-[0.3em]">{title}</span>
-      </motion.div>
-
-      {/* Expanded Image Slices */}
-      <div className="flex w-full h-full gap-2 overflow-hidden">
-        {images.map((src, i) => (
-          <motion.div
-            key={i}
-            className="relative h-full rounded-lg overflow-hidden flex-shrink-0"
-            initial={false}
-            animate={{
-              width: isHovered ? `${100 / images.length}%` : "0%",
-              opacity: isHovered ? 1 : 0
-            }}
-            transition={{ 
-              duration: 0.6, 
-              ease: [0.22, 1, 0.36, 1], 
-              // Stagger the expansion slightly from left to right
-              delay: isHovered ? i * 0.04 : 0 
-            }}
-          >
-            <img 
-              src={src} 
-              alt="Travel memory" 
-              className="absolute inset-0 w-full h-full object-cover" 
-              referrerPolicy="no-referrer"
-            />
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
+      <MuxPlayer
+        playbackId={playbackId}
+        streamType="on-demand"
+        autoPlay="muted"
+        loop
+        muted
+        playsInline
+        style={{
+          '--controls': 'none',
+          '--media-object-fit': 'cover',
+          '--media-object-position': 'center',
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          inset: 0
+        } as any} 
+      />
+    </div>
   );
 }

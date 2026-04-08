@@ -4,6 +4,26 @@ import { ParticleTextPanel } from "../ui/particle-text-panel";
 import { useScramble } from "../../hooks/useScramble";
 import { COUNTRY_DATA } from "../../data/content";
 import { GlobeScene } from "../3d/GlobeScene";
+import { TravelGalleryCard } from "../ui/travel-gallery-card";
+
+// Placeholder image sets
+const MEMORY_SET_1 = [
+  "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=800&auto=format&fit=crop"
+];
+
+const MEMORY_SET_2 = [
+  "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=800&auto=format&fit=crop"
+];
+
+const MEMORY_SET_3 = [
+  "https://images.unsplash.com/photo-1518391846015-55a9cc003b25?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop",
+];
 
 // --- 1. Animation Variants for Seamless Sliding ---
 const slideVariants = {
@@ -94,6 +114,26 @@ export function TransformingPanel({ countries, assets }: { countries: any[], ass
         >
           <GlobeScene lat={current.lat} lng={current.lng} />
         </motion.div>
+
+        {/* Landscape Video - Top Middle */}
+        <TravelGalleryCard 
+          playbackId="n02h02Y3d1kUC00XEiFxU01oXaPoJ7Hydjs00DLFJ77LwGeM" 
+          className="top-[10%] right-[45%] -rotate-2"
+          width={320} 
+          height={200}
+        />
+        <TravelGalleryCard 
+          playbackId="017EjMBvD002pu7I5cK2f5l9J022Mh8300uzjTqB9v3J2Jk"     
+          className="bottom-[8%] right-[8%] rotate-3"
+          width={220} 
+          height={320}
+        />
+        <TravelGalleryCard 
+          playbackId="lb00CcLl4h9027rWyqsrjqluTp4MGdpUhbWeEHjIhEdoY" 
+          className="bottom-[5%] left-[12%] -rotate-6"
+          width={200} 
+          height={200}
+        />
       </div>
     </div>
   );

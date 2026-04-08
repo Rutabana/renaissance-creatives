@@ -55,14 +55,7 @@ export function GlobeScene({ lat, lng }: { lat?: number; lng?: number }) {
         backgroundColor="rgba(0,0,0,0)"
         
         // Updated to explicitly match your exact file name
-        globeImageUrl="/pirate-map.jpeg" 
-        
-        onGlobeReady={() => {
-          if (globeRef.current) {
-            const material = globeRef.current.globeMaterial();
-            material.roughness = 1;
-          }
-        }}
+        globeImageUrl="/pirate-map-2.jpeg" 
         
         pointsData={COUNTRIES}
         pointAltitude={0.02}
