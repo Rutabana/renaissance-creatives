@@ -23,6 +23,8 @@ export const COUNTRY_DATA = [
         assetKey: "rwanda" as keyof typeof ASSETS,
         body: "A thousand hills, a thousand stories. Kigali moves with a quiet confidence — spotless streets, warm hospitality, and a skyline that climbs toward the clouds. As you weave through the bustling markets of Kimironko, the air is thick with the scent of roasted coffee and fresh earth. The hills cradle the city like a protective mother, offering breathtaking views from every vantage point. Here, tradition and modernity dance in perfect harmony, creating a rhythm unique to the heart of Africa. The golden hour paints the terracotta roofs in hues of fire, a daily masterpiece.",
         flourish: "compass" as const,
+        lat: -1.9403,
+        lng: 29.8739,
     },
     {
         id: "england",
@@ -36,6 +38,8 @@ export const COUNTRY_DATA = [
         body: "Grey skies that somehow always feel like home. The Thames carries centuries of ambition. The rhythm of London is relentless, a continuous hum of black cabs and the distant rumble of the Underground. You can lose yourself in the endless labyrinth of narrow streets in Soho or find quiet refuge in the sprawling green expanse of Hyde Park. It is a city that constantly reinvents itself while standing firmly on the foundation of its ancient, storied past.",
         quote: "The fog of London is just Africa's memory of clouds.",
         flourish: "quote" as const,
+        lat: 51.5072,
+        lng: -0.1276,
     },
     {
         id: "cyprus",
@@ -48,5 +52,7 @@ export const COUNTRY_DATA = [
         assetKey: "cyprus" as keyof typeof ASSETS,
         body: "Mediterranean light that paints everything gold by afternoon. The old city walls of Nicosia hold stories older than any map. The scent of wild thyme and sea salt lingers in the breeze, weaving through ancient ruins and modern cafes alike. It's an island caught between continents, where every stone has witnessed empires rise and fall. Life moves at a different pace here, dictated by the sun and the gentle lap of the waves against the rocky coastline.",
         flourish: "stamp" as const,
+        lat: 35.1264,
+        lng: 33.4299,
     },
 ];

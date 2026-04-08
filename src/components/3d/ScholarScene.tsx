@@ -3,7 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 
 export function ScholarModel() {
-  const { scene } = useGLTF("/scholar.glb");
+  const { scene } = useGLTF("/scholar+.glb");
   const meshRef = useRef<any>(null);
 
   useFrame(({ clock }) => {

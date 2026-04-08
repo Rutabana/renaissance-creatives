@@ -34,7 +34,7 @@ class TextParticle {
       distance = Math.sqrt(dx * dx + dy * dy);
 
       // Kept at 1.5 for a tighter, more cinematic "wind wake"
-      const repelRadius = bird.size * 1.5; 
+      const repelRadius = bird.size * 1; 
       
       if (distance < repelRadius) {
         const force = (repelRadius - distance) / repelRadius;
@@ -144,9 +144,9 @@ export function ParticleTextPanel({ text, isVisible }: { text: string; isVisible
     });
 
     let birds = [
-      { x: window.innerWidth * 0.2, y: window.innerHeight * 0.3, vx: 5, vy: 2, speed: 4.5, size: 50, imgIndex: 0, facesLeftNatively: true, wanderAngle: Math.random() * Math.PI * 2 },
+      { x: window.innerWidth * 0.2, y: window.innerHeight * 0.3, vx: 5, vy: 2, speed: 4.5, size: 120, imgIndex: 0, facesLeftNatively: true, wanderAngle: Math.random() * Math.PI * 2 },
       { x: window.innerWidth * 0.8, y: window.innerHeight * 0.5, vx: -4, vy: 3, speed: 5.5, size: 65, imgIndex: 1, facesLeftNatively: false, wanderAngle: Math.random() * Math.PI * 2 },
-      { x: window.innerWidth * 0.5, y: window.innerHeight * 0.8, vx: 2, vy: -5, speed: 6.0, size: 45, imgIndex: 2, facesLeftNatively: false, wanderAngle: Math.random() * Math.PI * 2 },
+      { x: window.innerWidth * 0.5, y: window.innerHeight * 0.8, vx: 2, vy: -5, speed: 12.0, size: 45, imgIndex: 2, facesLeftNatively: false, wanderAngle: Math.random() * Math.PI * 2 },
     ];
 
     let animationFrameId: number;
