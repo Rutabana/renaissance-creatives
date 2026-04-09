@@ -13,6 +13,7 @@ import { ASSETS } from "./data/content";
 import { WomanScene } from "./components/3d/WomanScene";
 import { BentoCard } from "./components/ui/bento-card";
 import { TravelSection } from "./components/sections/travel-section";
+import { ScriptoriumSection } from "./components/sections/scriptorium-section";
 
 function CharacterLayer({
   image,
@@ -90,10 +91,11 @@ function PortfolioGallery({ assets }: { assets: Record<string, string> }) {
   const FLIP_FILTER = "invert(1) hue-rotate(180deg) saturate(2.2)";
 
   const sections = [
-    { id: "intro", label: "The Intro" },
-    { id: "polymath", label: "The Polymath" },
-    { id: "traveller", label: "The Traveller" },
-  ];
+  { id: "intro", label: "The Intro" },
+  { id: "polymath", label: "The Polymath" },
+  { id: "traveller", label: "The Traveller" },
+  { id: "scriptorium", label: "The Scriptorium" }, // New Section
+];
 
   // Intro Section Animations
   const bgScale = useTransform(scrollYProgress, [0, 0.4], [1, 1.2], { clamp: true });
@@ -281,8 +283,11 @@ function PortfolioGallery({ assets }: { assets: Record<string, string> }) {
         </div>
       </div>
 
-      {/* TRAVEL SECTION */}
       <TravelSection assets={assets} />
+      
+      <div id="scriptorium">
+        <ScriptoriumSection />
+      </div>
 
     </div>
   );
