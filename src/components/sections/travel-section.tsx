@@ -120,7 +120,7 @@ export function TransformingPanel({ countries, assets }: { countries: any[], ass
           playbackId="n02h02Y3d1kUC00XEiFxU01oXaPoJ7Hydjs00DLFJ77LwGeM" 
           className="top-[10%] right-[45%] -rotate-2"
           width={320} 
-          height={200}
+          height={250}
         />
         <TravelGalleryCard 
           playbackId="017EjMBvD002pu7I5cK2f5l9J022Mh8300uzjTqB9v3J2Jk"     
@@ -131,7 +131,7 @@ export function TransformingPanel({ countries, assets }: { countries: any[], ass
         <TravelGalleryCard 
           playbackId="lb00CcLl4h9027rWyqsrjqluTp4MGdpUhbWeEHjIhEdoY" 
           className="bottom-[5%] left-[12%] -rotate-6"
-          width={200} 
+          width={230} 
           height={200}
         />
       </div>
