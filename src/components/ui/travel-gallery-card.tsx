@@ -25,6 +25,7 @@ export function TravelGalleryCard({
         loop
         muted
         playsInline
+        disableTracking
         style={{
           '--controls': 'none',
           '--media-object-fit': 'cover',

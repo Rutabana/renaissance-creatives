@@ -27,3 +27,14 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hide the scroll container drei's <ScrollControls> injects into the
+   scriptorium section so it doesn't show its own scrollbar. */
+.scriptorium-scroll ::-webkit-scrollbar {
+  display: none;
+}
+
+.scriptorium-scroll * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

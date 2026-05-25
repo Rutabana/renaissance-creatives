@@ -1,21 +1,31 @@
+// Example Parent Component integration
+import { useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { ScrollControls } from "@react-three/drei";
-import { Suspense } from "react";
 import { ScriptoriumScene } from "../three/scriptorium-scene";
+import { GlassModal } from "../ui/glass-modal";
+import { GrainFilter } from "../ui/grain-filter";
+import { ScrollControls } from "@react-three/drei";
 
-export function ScriptoriumSection() {
+export default function ScriptoriumSection() {
+  const [selectedProject, setSelectedProject] = useState(null);
+
   return (
-    <div className="relative h-[250vh] bg-[#0a0a0a]">
-      <div className="sticky top-0 h-screen w-full">
-        {/* Camera at [0,0,0] looking out. FOV 45 is the "sweet spot" for this radius */}
-        <Canvas camera={{ position: [0, 0, 0], fov: 45 }}>
-          <Suspense fallback={null}>
-            <ScrollControls pages={3} damping={0.4}>
-              <ScriptoriumScene />
-            </ScrollControls>
-          </Suspense>
-        </Canvas>
-      </div>
+    <div className="scriptorium-scroll relative w-full h-screen">
+      <Canvas>
+        {/* Wrap the scene in ScrollControls. 
+            pages={4} creates a scrollable area 4x the height of the screen. 
+            damping={0.2} adds a smooth, physical momentum to the scroll. */}
+        <ScrollControls pages={4} damping={0.2}>
+          <ScriptoriumScene onBookClick={(project) => setSelectedProject(project)} />
+        </ScrollControls>
+      </Canvas>
+
+      {/* The 2D UI Overlay */}
+      <GlassModal 
+        isOpen={!!selectedProject} 
+        onClose={() => setSelectedProject(null)} 
+        project={selectedProject} 
+      />
     </div>
   );
 }

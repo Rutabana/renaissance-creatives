@@ -1,10 +1,11 @@
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValueEvent } from "motion/react";
+import { motion, useScroll, AnimatePresence, useMotionValueEvent } from "motion/react";
 import { useRef, useState } from "react";
 import { ParticleTextPanel } from "../ui/particle-text-panel";
 import { useScramble } from "../../hooks/useScramble";
 import { COUNTRY_DATA } from "../../data/content";
 import { GlobeScene } from "../3d/GlobeScene";
 import { TravelGalleryCard } from "../ui/travel-gallery-card";
+import { Starfield } from "../ui/starfield";
 
 // Placeholder image sets
 const MEMORY_SET_1 = [
@@ -141,73 +142,32 @@ export function TransformingPanel({ countries, assets }: { countries: any[], ass
 
 // --- 3. The Parent Travel Section Wrapper ---
 export function TravelSection({ assets }: { assets: Record<string, string> }) {
-    const travelContainerRef = useRef<HTMLDivElement>(null);
-    const { scrollYProgress: travelProgress } = useScroll({
-        target: travelContainerRef,
-        offset: ["start start", "end end"],
-    });
-
-    // Cartographic split transition (0–25% of travelProgress = first 100vh of 400vh)
-    const topHalfY = useTransform(travelProgress, [0, 0.25], ["0%", "-100%"]);
-    const bottomHalfY = useTransform(travelProgress, [0, 0.25], ["0%", "100%"]);
-    const seamOpacity = useTransform(travelProgress, [0, 0.08, 0.20, 0.25], [0, 1, 1, 0]);
-    const titleOpacity = useTransform(travelProgress, [0.05, 0.15, 0.22, 0.25], [0, 1, 1, 0]);
-
     return (
-        <div ref={travelContainerRef} id="traveller" style={{ height: "400vh" }} className="relative">
+        <div id="traveller" className="relative" style={{ background: "#04040f" }}>
 
-            {/* ── TRANSITION: Cartographic split ── */}
-            <div className="sticky top-0 h-screen overflow-hidden z-10 pointer-events-none">
-                {/* Top half — ship background, slides up */}
-                <motion.div
-                    style={{ y: topHalfY, height: "50vh", overflow: "hidden" }}
-                    className="absolute top-0 left-0 right-0"
-                >
-                    <img
-                        src="/ship-background.jpg"
-                        alt=""
-                        className="w-full h-full object-cover object-bottom brightness-75 saturate-150"
-                        referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-black/40" />
-                </motion.div>
+            {/* Background SVG Map Grid (spans the whole section) */}
+            <div className="absolute inset-0 pointer-events-none z-0">
+                <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="mapgrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#c8960c" strokeWidth="0.5" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#mapgrid)" />
+                </svg>
+            </div>
 
-                {/* Bottom half — travel bg navy, slides down */}
-                <motion.div
-                    style={{ y: bottomHalfY, height: "50vh", background: "#04040f" }}
-                    className="absolute bottom-0 left-0 right-0"
-                />
-
-                {/* Seam glow line */}
-                <motion.div
-                    style={{ opacity: seamOpacity, height: "1px", background: "rgba(255,215,0,0.8)", boxShadow: "0 0 20px 6px rgba(255,200,0,0.5), 0 0 60px 12px rgba(255,120,0,0.25)" }}
-                    className="absolute top-1/2 left-0 right-0 z-20 -translate-y-px"
-                />
-
-                {/* "The Traveller" title at seam centre */}
-                <motion.div
-                    style={{ opacity: titleOpacity }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30"
-                >
+            {/* ── Section title intro (deep space) ── */}
+            <div className="relative z-20 h-[70vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+                <Starfield />
+                <div className="relative z-10">
                     <p className="text-[10px] uppercase tracking-[0.6em] font-mono text-[#FFD700]/60 mb-3">A New Chapter</p>
                     <h2 className="text-[clamp(3rem,8vw,7rem)] font-serif italic text-[#f5f0e8] leading-none">The Traveller</h2>
-                </motion.div>
+                </div>
             </div>
 
             {/* ── TRAVEL CONTENT: Country Panels ── */}
             <div className="relative z-20">
-                {/* Background SVG Map Grid */}
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "#04040f" }}>
-                    <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <pattern id="mapgrid" width="80" height="80" patternUnits="userSpaceOnUse">
-                                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#c8960c" strokeWidth="0.5" />
-                            </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#mapgrid)" />
-                    </svg>
-                </div>
-
                 {/* Render the Active Transforming Carousel */}
                 <TransformingPanel countries={COUNTRY_DATA} assets={assets} />
             </div>

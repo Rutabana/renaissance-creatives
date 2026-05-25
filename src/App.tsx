@@ -10,10 +10,11 @@ import { useRef } from "react";
 import { Sparkles, Globe, ShoppingBag, Palette, Camera, Menu } from "lucide-react";
 
 import { ASSETS } from "./data/content";
+import { CDN } from "./data/cdn";
 import { WomanScene } from "./components/3d/WomanScene";
 import { BentoCard } from "./components/ui/bento-card";
 import { TravelSection } from "./components/sections/travel-section";
-import { ScriptoriumSection } from "./components/sections/scriptorium-section";
+import ScriptoriumSection from "./components/sections/scriptorium-section";
 
 function CharacterLayer({
   image,
@@ -262,7 +263,7 @@ function PortfolioGallery({ assets }: { assets: Record<string, string> }) {
       {/* Positioned normally so it naturally scrolls into view pushed up as the Hero sticky container finishes its 200vh travel */}
       <div id="polymath" className="relative z-20 w-full min-h-screen bg-[#0a0a0a]">
         <div className="absolute inset-0 pointer-events-none z-0">
-          <img src="/ship-background.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <img src={`${CDN}/images/ship-background.jpg`} alt="" className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a] via-black/60 to-[#0a0a0a]" />
           <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 50%, transparent 70%, rgba(0,0,0,0.8) 100%)" }} />
         </div>

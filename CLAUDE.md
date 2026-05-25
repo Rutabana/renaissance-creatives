@@ -68,6 +68,22 @@ Static assets in `/public`:
 - `/woman.glb`: 3D woman model (with embedded animation clip)
 - `/ship-background.jpg`: Polymath section background (revealed by burn transition)
 
+### CDN (S3 + CloudFront)
+Media lives on S3 bucket `cafecollective-assets-eu-central-1-226198813365-eu-central-1-an`
+under prefix **`rennaissance-creatives/`**, served via `https://d3s90ejqky0l1n.cloudfront.net`.
+Base URL is exported from `src/data/cdn.ts` as `CDN`.
+
+- **On the CDN today (loaded via plain `<img>`, no CORS needed):**
+  `images/bg.png` (hero_bg), `images/ship-background.jpg`.
+- **Pre-staged on the CDN but still loaded LOCALLY** because three.js / canvas
+  fetch them with `crossOrigin` and the bucket does not yet return
+  `Access-Control-Allow-Origin`: `models/women.glb`, `images/church-background.jpg`,
+  `images/pirate-map.jpeg`, `books/cover-1..4.png`, `birds/bird1..3.png`.
+- **To migrate the WebGL/canvas assets:** configure bucket CORS (GET/HEAD,
+  `AllowedOrigins` incl. the deploy origin or `*`) + a CloudFront response-headers
+  policy that forwards `Origin` and returns ACAO, then invalidate the cached paths.
+  Requires admin AWS creds — `LightsailAPIUser` is denied `s3:GetBucketCORS`.
+
 ## Design Reference
 Modelled after https://www.shopify.com/editions/winter2026.
 Key inspiration: dark multiply overlay, vibrant saturated colors popping against dark background, cinematic scroll-linked transitions.

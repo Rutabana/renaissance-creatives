@@ -1,5 +1,7 @@
+import { CDN } from "./cdn";
+
 export const ASSETS = {
-    hero_bg: "/bg.png",
+    hero_bg: `${CDN}/images/bg.png`,
     hero_subject_woman: "/woman-1.png",
     hero_subject_man: "/man-1.png",
     hero_accents: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=1080",
@@ -7,7 +9,7 @@ export const ASSETS = {
     local: "https://images.unsplash.com/photo-1517147177326-b37599372b73?auto=format&fit=crop&q=80&w=1080",
     abstract: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1080",
     rwanda: "https://images.unsplash.com/photo-1511283878565-0833bf39de9d?q=80&w=2074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    england: "/ship-background.jpg",
+    england: `${CDN}/images/ship-background.jpg`,
     cyprus: "https://24glo.com/img/cyprus/map03.jpg",
 };
 
