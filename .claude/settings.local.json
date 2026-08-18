@@ -9,7 +9,14 @@
       "WebFetch(domain:github.com)",
       "WebSearch",
       "Bash(npm run *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git push *)",
+      "Bash(git rm *)",
+      "Bash(node *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }
