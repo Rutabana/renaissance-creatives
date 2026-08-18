@@ -5,10 +5,11 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import type { MotionValue } from "motion/react";
+import { CDN } from "../../data/cdn";
 
 
 export function WomanModel({ scrollProgress }: { scrollProgress: MotionValue<number> }) {
-  const { scene, animations } = useGLTF("/women.glb");
+  const { scene, animations } = useGLTF(`${CDN}/models/women.glb`);
   const meshRef = useRef<any>(null);
   const { mixer, actions, names } = useAnimations(animations, scene);
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { CDN } from "../../data/cdn";
 
 // --- 1. The Physics Particle Class ---
 class TextParticle {
@@ -71,7 +72,7 @@ export function ParticleTextPanel({ text, isVisible }: { text: string; isVisible
   const birdImagesRef = useRef<HTMLImageElement[]>([]);
 
   useEffect(() => {
-    birdImagesRef.current = ['/objects/bird1.png', '/objects/bird2.png', '/objects/bird3.png'].map(src => {
+    birdImagesRef.current = [`${CDN}/birds/bird1.png`, `${CDN}/birds/bird2.png`, `${CDN}/birds/bird3.png`].map(src => {
       const img = new Image();
       img.src = src;
       return img;
