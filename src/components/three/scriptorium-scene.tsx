@@ -2,11 +2,13 @@
 import { useRef, useMemo } from "react";
 import { extend, useFrame } from "@react-three/fiber";
 import { type ThreeElement } from "@react-three/fiber";
-import { useTexture, useScroll, Float, shaderMaterial, PerspectiveCamera, Sparkles, SpotLight } from "@react-three/drei";
+import { useTexture, Float, shaderMaterial, PerspectiveCamera, Sparkles } from "@react-three/drei";
 import { EffectComposer, DepthOfField } from "@react-three/postprocessing";
 import * as THREE from "three";
+import type { MotionValue } from "motion/react";
 import { BookItem } from "./book-item";
 import { PROJECTS } from "../../data/projects";
+import { CDN } from "../../data/cdn";
 
 // 1. Define the GLSL Shader Material
 const MuralGrainMaterial = shaderMaterial(
@@ -55,13 +57,12 @@ declare module "@react-three/fiber" {
   }
 }
 
-export function ScriptoriumScene({ onBookClick }: { onBookClick: (project: any) => void }) {
-  const scroll = useScroll();
+export function ScriptoriumScene({ scrollProgress, onBookClick }: { scrollProgress: MotionValue<number>; onBookClick: (project: any) => void }) {
   const groupRef = useRef<THREE.Group>(null);
   const bgRef = useRef<THREE.Mesh>(null);
   const muralMatRef = useRef<any>(null);
 
-  const churchTex = useTexture("/church-background.jpg");
+  const churchTex = useTexture(`${CDN}/images/church-background.jpg`);
   churchTex.colorSpace = THREE.SRGBColorSpace;
 
   const TORNADO_BOOKS = 24;
@@ -89,14 +90,17 @@ export function ScriptoriumScene({ onBookClick }: { onBookClick: (project: any) 
     }), []);
 
   useFrame((state) => {
+    const p = scrollProgress.get();
     if (groupRef.current && bgRef.current) {
-      // Background pans throughout full scroll
-      bgRef.current.position.x = -65 + scroll.offset * 130;
+      // Background pans LEFT→RIGHT across the full scroll (inverted): we start
+      // at the left end of the cathedral and travel toward its right end, so
+      // the rightward exit flows into the garden that sits to the right.
+      bgRef.current.position.x = 65 - p * 130;
 
       // Tornado spins + descends across the FULL scroll, staying in sync
       // with the background pan instead of freezing partway through.
-      groupRef.current.rotation.y = scroll.offset * Math.PI * 6;
-      groupRef.current.position.y = scroll.offset * -3;
+      groupRef.current.rotation.y = p * Math.PI * 6;
+      groupRef.current.position.y = p * -3;
 
     }
 
@@ -116,8 +120,8 @@ export function ScriptoriumScene({ onBookClick }: { onBookClick: (project: any) 
         <muralGrainMaterial
           ref={muralMatRef}
           map={churchTex}
-          uNoise={0.088}
-          uBrightness={1.15}
+          uNoise={0.04}
+          uBrightness={1.0}
           transparent={false}
         />
       </mesh>
@@ -143,31 +147,12 @@ export function ScriptoriumScene({ onBookClick }: { onBookClick: (project: any) 
           );
         })}
 
-        {/* --- LIGHTING & VOLUMETRICS --- */}
-        <ambientLight intensity={1.2} />
-        <pointLight position={[0, 15, 0]} intensity={1.5} color="#ffcc80" />
-
-        <SpotLight
-          position={[15, 35, -10]}
-          angle={0.25}
-          attenuation={25}
-          anglePower={5}
-          intensity={8}
-          color="#ffedd6"
-          opacity={0.35}
-          penumbra={1}
-        />
-
-        <SpotLight
-          position={[-20, 25, -15]}
-          angle={0.4}
-          attenuation={20}
-          anglePower={4}
-          intensity={4}
-          color="#ffd6a5"
-          opacity={0.2}
-          penumbra={1}
-        />
+        {/* --- LIGHTING --- */}
+        <ambientLight intensity={1.3} />
+        <pointLight position={[0, 15, 0]} intensity={2} color="#ffcc80" />
+        {/* Plain (non-volumetric) spot for a touch of warm directionality —
+            no visible light cone, so nothing blooms in the center. */}
+        <spotLight position={[15, 35, -10]} angle={0.6} penumbra={1} intensity={120} distance={140} color="#ffedd6" />
 
         {/* --- ATMOSPHERIC DUST MOTES --- */}
         <Sparkles
@@ -185,7 +170,7 @@ export function ScriptoriumScene({ onBookClick }: { onBookClick: (project: any) 
         <DepthOfField
           focusDistance={0.02}
           focalLength={0.05}
-          bokehScale={2.5}
+          bokehScale={1.0}
           height={480}
         />
       </EffectComposer>

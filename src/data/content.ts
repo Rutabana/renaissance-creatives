@@ -1,7 +1,7 @@
 import { CDN } from "./cdn";
 
 export const ASSETS = {
-    hero_bg: `${CDN}/images/bg.png`,
+    hero_bg: `${CDN}/images/bg.avif`,
     hero_subject_woman: "/woman-1.png",
     hero_subject_man: "/man-1.png",
     hero_accents: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=1080",
