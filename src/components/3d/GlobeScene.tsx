@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import Globe from "react-globe.gl";
+import { CDN } from "../../data/cdn";
 
 const COUNTRIES = [
   { lat: -1.9403, lng: 29.8739 }, // Rwanda
@@ -55,7 +56,7 @@ export function GlobeScene({ lat, lng }: { lat?: number; lng?: number }) {
         backgroundColor="rgba(0,0,0,0)"
         
         // Updated to explicitly match your exact file name
-        globeImageUrl="/pirate-map.jpeg" 
+        globeImageUrl={`${CDN}/images/pirate-map.jpeg`} 
         
         pointsData={COUNTRIES}
         pointAltitude={0.02}

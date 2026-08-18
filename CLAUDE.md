@@ -63,26 +63,65 @@ Creative assets generated via `src/services/imageService.ts` using Gemini:
 - `abstract`: Used in Visual Arts BentoCard
 - `local`: Used in Curation BentoCard
 
-Static assets in `/public`:
-- `/man-1.png`: Hero left character
-- `/woman.glb`: 3D woman model (with embedded animation clip)
-- `/ship-background.jpg`: Polymath section background (revealed by burn transition)
+**`/public` is now empty** — every media asset is served from the CDN. The only
+remaining local-path references are `ASSETS.hero_subject_woman` (`/woman-1.png`)
+and `ASSETS.hero_subject_man` (`/man-1.png`), which have never existed on disk.
 
-### CDN (S3 + CloudFront)
+### CDN (S3 + CloudFront, proxied same-origin at `/cdn`)
 Media lives on S3 bucket `cafecollective-assets-eu-central-1-226198813365-eu-central-1-an`
-under prefix **`rennaissance-creatives/`**, served via `https://d3s90ejqky0l1n.cloudfront.net`.
-Base URL is exported from `src/data/cdn.ts` as `CDN`.
+under prefix **`rennaissance-creatives/`**, fronted by
+`https://d3s90ejqky0l1n.cloudfront.net`.
 
-- **On the CDN today (loaded via plain `<img>`, no CORS needed):**
-  `images/bg.png` (hero_bg), `images/ship-background.jpg`.
-- **Pre-staged on the CDN but still loaded LOCALLY** because three.js / canvas
-  fetch them with `crossOrigin` and the bucket does not yet return
-  `Access-Control-Allow-Origin`: `models/women.glb`, `images/church-background.jpg`,
-  `images/pirate-map.jpeg`, `books/cover-1..4.png`, `birds/bird1..3.png`.
-- **To migrate the WebGL/canvas assets:** configure bucket CORS (GET/HEAD,
-  `AllowedOrigins` incl. the deploy origin or `*`) + a CloudFront response-headers
-  policy that forwards `Origin` and returns ACAO, then invalidate the cached paths.
-  Requires admin AWS creds — `LightsailAPIUser` is denied `s3:GetBucketCORS`.
+**Do not reference the CloudFront host directly in app code.** Almost every asset
+here is fetched by three.js / react-globe.gl / canvas with
+`crossOrigin="anonymous"`, and the bucket still sends no
+`Access-Control-Allow-Origin` (`LightsailAPIUser` is denied `s3:PutBucketCORS`).
+Instead the CDN is exposed under a **same-origin path, `/cdn/*`**, which removes
+the CORS check entirely:
+
+| Environment | Proxy mechanism |
+|---|---|
+| production (Vercel) | `rewrites` entry in `vercel.json` |
+| `vite dev` / `vite preview` | `server.proxy` / `preview.proxy` in `vite.config.ts` |
+
+`src/data/cdn.ts` exports `CDN = "/cdn"` (plus `CDN_ORIGIN` / `CDN_PREFIX` for
+documentation). **Both proxies must stay in sync** — change one, change the other.
+
+Bucket layout under `rennaissance-creatives/`:
+```
+models/    women.glb (33 MB)
+images/    bg.avif, ship-background.jpg, church-background.jpg, pirate-map.jpeg, bg.png (legacy)
+books/     cover-1..4.png
+birds/     bird1..3.png
+textures/  grass-1..3.webp, dirt-road.webp
+textures/originals/  grass-1..3-4k.png, dirt-road-4k.png  (backup of the pre-downsize files)
+```
+
+**Texture downsizing (2026-08-18):** the garden textures were 4K PNGs totalling
+~43 MB. They are now 1024 px (grass) / 2048 px (road) WebP at ~1.05 MB total —
+a 97% cut with no visible loss at `alphaTest: 0.4` billboard scale. The 4K
+originals are preserved under `textures/originals/`. Regenerate with:
+```bash
+cwebp -q 85 -alpha_q 100 -resize 1024 0 in.png -o out.webp
+```
+
+**If bucket CORS ever gets fixed** (admin creds + CloudFront response-headers
+policy forwarding `Origin`), the proxy can be dropped by setting
+`CDN = CDN_ORIGIN + CDN_PREFIX` in `src/data/cdn.ts`. Not required — the proxy
+works and keeps everything on one origin.
+
+## Deployment (Vercel)
+- Vercel project **`chelsea`** under scope `loic-rutabanas-projects`, connected to
+  GitHub `Rutabana/renaissance-creatives`.
+- Production domain: **https://chelsea.loic-rutabana.com** (`A` → `76.76.21.21`,
+  matching the other `*.loic-rutabana.com` subdomains). DNS zone is Route53.
+- `vercel.json` holds the `/cdn` rewrite, the SPA fallback, and long-lived
+  `Cache-Control` on `/cdn/*`.
+- Deploy manually with `vercel deploy --prod --yes`. **Note:** the GitHub
+  connection means a push to `main` triggers its own production build — make sure
+  the CDN work is merged to `main` before relying on git-driven deploys.
+- Optional env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) enable the
+  finale comment box; without them it falls back to `localStorage`.
 
 ## Design Reference
 Modelled after https://www.shopify.com/editions/winter2026.
